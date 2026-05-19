@@ -120,9 +120,69 @@ def list(path):
 @main.command()
 @click.option("-p", "--path", default=".", callback=_resolve_path, help="Target directory")
 def create(path):
-    click.echo("Interactive wizard not yet implemented")
-    click.echo("For now, create catalog/index.yaml manually")
-    sys.exit(1)
+    personas_dir = path / "sources" / "personas"
+    overlays_dir = path / "sources" / "overlays"
+
+    if not personas_dir.exists():
+        click.echo("No personas directory found at " + str(personas_dir), err=True)
+        click.echo("This wizard must be run from a governAI project root with sources/")
+        sys.exit(1)
+
+    personas = sorted(p.stem for p in personas_dir.glob("*.md"))
+    overlays = sorted(p.stem for p in overlays_dir.glob("*.md")) if overlays_dir.exists() else []
+
+    click.echo("governAI — create agent config")
+    click.echo("─" * 50)
+
+    click.echo("\nAvailable personas:")
+    for i, p in enumerate(personas, 1):
+        click.echo(f"  {i}. {p}")
+    sel = click.prompt("\nSelect persona", type=int, default=1)
+    persona = personas[sel - 1]
+
+    selected_overlays = []
+    if overlays:
+        click.echo("\nAvailable overlays (comma-separated numbers, or 0 for none):")
+        for i, o in enumerate(overlays, 1):
+            click.echo(f"  {i}. {o}")
+        sel_overlays = click.prompt("Select overlays", default="0")
+        if sel_overlays.strip() != "0":
+            for s in sel_overlays.split(","):
+                s = s.strip()
+                if s.isdigit():
+                    idx = int(s) - 1
+                    if 0 <= idx < len(overlays):
+                        selected_overlays.append(overlays[idx])
+
+    config_id = click.prompt("Config ID", default=persona)
+    enabled = click.confirm("Enable this config?", default=True)
+
+    catalog_dir = path / "catalog"
+    catalog_dir.mkdir(parents=True, exist_ok=True)
+
+    entry = {
+        "id": config_id,
+        "enabled": enabled,
+        "source": {
+            "persona": persona,
+            "overlays": selected_overlays,
+        },
+        "targets": [{"runtime": "opencode"}],
+    }
+
+    dst = catalog_dir / "index.yaml"
+    if dst.exists():
+        import yaml
+        data = _load_yaml(dst)
+        data.setdefault("configs", []).append(entry)
+    else:
+        data = {"configs": [entry]}
+
+    with open(dst, "w", encoding="utf-8") as f:
+        import yaml
+        yaml.dump(data, f, default_flow_style=False, sort_keys=False)
+
+    click.echo(f"\n✔ Config added: {dst}")
 
 
 @main.command()

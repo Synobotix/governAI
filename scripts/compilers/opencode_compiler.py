@@ -8,13 +8,20 @@ from typing import List, Dict, Any
 def build_ir(persona: str, overlays: List[Dict[str, Any]]) -> Dict[str, Any]:
     """
     Build intermediate representation (IR) from persona + overlays.
+    Overlays are processed in priority order (highest first).
     """
 
     rules = []
     constraints = []
     output_format = []
 
-    for overlay in overlays:
+    sorted_overlays = sorted(
+        overlays,
+        key=lambda o: o.get("priority", 1) if isinstance(o, dict) else 1,
+        reverse=True,
+    )
+
+    for overlay in sorted_overlays:
         if not isinstance(overlay, dict):
             continue
 
@@ -167,9 +174,30 @@ def compile_overlay(raw_text: str) -> Dict[str, Any]:
 
         return "\n".join(lines).strip()
 
+    def extract_priority(text: str) -> int:
+        marker = "## Priority"
+        if marker not in text:
+            return 1
+        block = text.split(marker)[1]
+        block = block.split("\n##")[0]
+        for line in block.splitlines():
+            line = line.strip().upper()
+            if line in ("HIGH",):
+                return 3
+            if line in ("MEDIUM-HIGH", "MEDIUM HIGH"):
+                return 2
+            if line in ("MEDIUM",):
+                return 1
+            if line in ("MEDIUM-LOW", "MEDIUM LOW"):
+                return 0
+            if line in ("LOW",):
+                return -1
+        return 1
+
     body = extract_body("Output Behavior")
     return {
         "rules": extract_items("Rules"),
         "constraints": extract_items("Constraints"),
         "output": [body] if body else [],
+        "priority": extract_priority(raw_text),
     }

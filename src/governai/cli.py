@@ -230,9 +230,9 @@ def install(config_id, all_flag, path):
             click.echo(f"  ✖ {cid}: {e}", err=True)
             sys.exit(1)
 
-    dist_dir = path / "dist"
-    dist_dir.mkdir(parents=True, exist_ok=True)
-    dst = dist_dir / "opencode.json"
+    out_dir = path / ".opencode"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    dst = out_dir / "opencode.json"
     with open(dst, "w", encoding="utf-8") as f:
         json.dump(output, f, indent=2, ensure_ascii=False)
 

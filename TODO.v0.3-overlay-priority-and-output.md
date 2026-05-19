@@ -4,15 +4,13 @@
 
 ## Active
 
-**T-002**: priority extraction in compile_overlay()
+**T-005**: docs update
 
 ## Queue
 
-- T-003: priority-based overlay sorting in build_ir()
-- T-004: output path change to .opencode/ in CLI
-- T-005: docs update
 - T-006: validation
 
 ## Done
 
-- T-001: architect + ADR for overlay priority and output contract | commit:
+- T-001: architect + ADR for overlay priority and output contract | commit: c185c11
+- T-002 through T-004: priority extraction, sorting, and output path change | commit:

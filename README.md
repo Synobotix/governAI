@@ -72,7 +72,7 @@ The compilation pipeline:
                     ┌─ scripts/validate_catalog.py (schema + source check)
                     │
 sources/personas/  ─┤
-                    ├─ catalog/index.yaml ── scripts/compile.py ── dist/opencode.json
+                    ├─ catalog/index.yaml ── governAI install ── dist/opencode.json
 sources/overlays/  ─┤
                     │
                     └─ scripts/sync_overlays_to_skills.py → .opencode/skills/overlays/
@@ -88,7 +88,7 @@ sources/overlays/  ─┤
 
 ### Built With
 
-The compilation pipeline is written in Python. No external dependencies beyond PyYAML.
+Python 3.11+, with CLI support via [click](https://click.palletsprojects.com/) and [PyYAML](https://pyyaml.org/).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -106,6 +106,9 @@ The compilation pipeline is written in Python. No external dependencies beyond P
 
 | | |
 |---|---|---|
+| `governAI` CLI | `list`, `install`, `create` commands with `-p` path support |
+| Context-aware default | `governAI` detects catalog and auto-installs |
+| Interactive wizard | `governAI create` guides config creation step by step |
 | Persona + overlay compilation | Deterministic, reproducible builds |
 | Primary / subagent modes | Task delegation with permission + budget |
 | Model-agnostic | Set any model ID in catalog |
@@ -120,10 +123,22 @@ The compilation pipeline is written in Python. No external dependencies beyond P
 
 ### Prerequisites
 
-- Python 3.10+
-- PyYAML (`pip install pyyaml`)
+- Python 3.11+
+
+### Installation
+
+```bash
+pip install -e .                     # install CLI in editable mode
+```
 
 ### Quick Start
+
+```bash
+governAI list -p .                   # list available configs
+governAI install --all -p .          # compile all → dist/opencode.json
+```
+
+Or step by step with the original scripts:
 
 ```bash
 pip install pyyaml
@@ -152,6 +167,15 @@ Create `sources/overlays/<name>.md` with sections: Rules, Constraints, Output Be
 Edit `catalog/index.yaml` to compose persona + overlays into a config entry.
 
 ### Validate, sync, and build
+
+```bash
+governAI list -p .                        # list configs
+governAI install --all -p .               # build all → dist/opencode.json
+governAI create -p .                      # interactive wizard (new config)
+governAI install <config-id> -p .         # build single config
+```
+
+Or with the original scripts:
 
 ```bash
 python3 scripts/validate_catalog.py          # check catalog

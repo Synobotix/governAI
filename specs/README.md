@@ -1,1 +1,1 @@
-Specs directory for governAI / SynthKit
+Specs for governAI / SynthKit

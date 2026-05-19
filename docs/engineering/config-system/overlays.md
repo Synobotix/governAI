@@ -20,7 +20,7 @@ Plusieurs overlays peuvent être empilés (appliqués dans l'ordre du catalogue)
 | `## Rules` | oui | ✅ Extraites comme règles | Comportements que le modèle DOIT suivre |
 | `## Constraints` | oui | ✅ Extraites comme contraintes | Comportements que le modèle NE DOIT PAS faire |
 | `## Output Behavior` | oui | ✅ Extrait comme format de sortie | Structure de réponse attendue |
-| `## Priority` | oui | ❌ Non utilisée | Prévue pour futur système de conflit |
+| `## Priority` | oui | ✅ Résolution de conflit | Priorité (HIGH > MEDIUM-HIGH > MEDIUM > MEDIUM-LOW > LOW) |
 | `## Behavioral Impact` | non | — | Ce que l'overlay modifie |
 | `## Compatibility` | non | — | Overlays compatibles |
 | `## Observable Effects` | non | — | Comment vérifier l'activation |
@@ -36,7 +36,7 @@ Le compilateur lit chaque overlay avec `compile_overlay()` :
 - Ignore les séparateurs `---`
 - Fusionne les résultats dans les sections du prompt `=== RULES ===`, `=== CONSTRAINTS ===`, `=== OUTPUT FORMAT ===`
 
-Les overlays ne sont **pas déconflictés** : ils s'empilent séquentiellement.
+Les overlays sont **déconflictés par priorité** : avant la compilation, les overlays sont triés par priorité décroissante (HIGH > MEDIUM-HIGH > MEDIUM > MEDIUM-LOW > LOW). En cas de règle ou contrainte identique entre deux overlays, la version de l'overlay avec la priorité la plus haute est conservée. La priorité par défaut est MEDIUM.
 
 ## Overlays as Skills
 

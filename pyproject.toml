@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "governai"
+version = "0.2.0"
+description = "Compile modular AI behaviors into executable OpenCode agent configs"
+requires-python = ">=3.11"
+dependencies = [
+    "click>=8.0",
+    "pyyaml>=6.0",
+]
+
+[project.scripts]
+governAI = "governai.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

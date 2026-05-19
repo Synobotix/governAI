@@ -1,0 +1,102 @@
+@startuml Code Diagram - Payment Service
+!include <C4/C4_Component>
+LAYOUT_TOP_DOWN()
+' C4 include provides LAYOUT_TOP_DOWN() only.
+' No LAYOUT_WITH_LEGEND(): C4 legend shows irrelevant types for class diagrams.
+
+title Code Diagram - Payment Service Component
+
+package "API" {
+    class PaymentController {
+        <<controller>>
+        + createPayment(dto : PaymentRequest) : ResponseEntity
+        + refundPayment(id : UUID) : ResponseEntity
+        + getPayment(id : UUID) : ResponseEntity
+    }
+}
+
+package "Core" {
+    interface PaymentGateway {
+        <<interface>>
+        + authorize(request : AuthorizationRequest) : AuthorizationResult
+        + capture(request : CaptureRequest) : CaptureResult
+        + refund(request : RefundRequest) : RefundResult
+        + void(request : VoidRequest) : VoidResult
+    }
+
+    class PaymentService {
+        <<service>>
+        - gateway : PaymentGateway
+        - validator : PaymentValidator
+
+        + processPayment(request : PaymentRequest) : PaymentResult
+        + refundPayment(paymentId : UUID) : PaymentResult
+        - buildAuthorization(payment : Payment) : AuthorizationRequest
+    }
+
+    class PaymentValidator {
+        <<service>>
+        + validate(request : PaymentRequest) : ValidationResult
+        - validateCard(card : CardDetails) : boolean
+        - validateAmount(amount : Money) : boolean
+        - checkFraudRules(payment : Payment) : FraudAssessment
+    }
+
+    entity Payment {
+        + id : UUID
+        + amount : Money
+        + currency : CurrencyCode
+        + status : PaymentStatus
+        + gatewayRef : String
+        + createdAt : Instant
+
+        + markAuthorized(ref : String) : void
+        + markCaptured() : void
+        + markFailed(reason : String) : void
+    }
+
+    enum PaymentStatus {
+        PENDING
+        AUTHORIZED
+        CAPTURED
+        REFUNDED
+        FAILED
+        VOIDED
+    }
+
+    enum CurrencyCode {
+        EUR
+        USD
+        GBP
+        JPY
+    }
+}
+
+package "Gateways" {
+    class StripeGateway {
+        + authorize(request : AuthorizationRequest) : AuthorizationResult
+        + capture(request : CaptureRequest) : CaptureResult
+        + refund(request : RefundRequest) : RefundResult
+        + void(request : VoidRequest) : VoidResult
+        - callStripeApi(endpoint : String, payload : JsonNode) : JsonNode
+    }
+
+    class BraintreeGateway {
+        + authorize(request : AuthorizationRequest) : AuthorizationResult
+        + capture(request : CaptureRequest) : CaptureResult
+        + refund(request : RefundRequest) : RefundResult
+        + void(request : VoidRequest) : VoidResult
+        - callBraintreeSdk(method : String, params : Map) : Response
+    }
+}
+
+PaymentController --> PaymentService
+PaymentService --> PaymentGateway
+PaymentService --> PaymentValidator
+PaymentService --> Payment
+Payment --> PaymentStatus
+Payment --> CurrencyCode
+StripeGateway ..|> PaymentGateway
+BraintreeGateway ..|> PaymentGateway
+
+@enduml

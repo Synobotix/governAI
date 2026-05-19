@@ -1,0 +1,59 @@
+@startuml Component Diagram - E-Commerce API Container
+!include <C4/C4_Component>
+
+LAYOUT_TOP_DOWN()
+LAYOUT_WITH_LEGEND()
+
+title Component Diagram - E-Commerce API Container
+
+Person(customer, "Customer", "Browses and purchases products")
+Person(admin, "Admin", "Manages catalog and orders")
+
+System_Boundary(ecommerce, "E-Commerce Platform") {
+    Container(spa, "Single-Page Application", "React", "Customer-facing web UI")
+    Container(adminSpa, "Admin SPA", "React", "Admin management interface")
+
+    Container_Boundary(apiComp, "API Gateway") {
+        Component(authCtrl, "Auth Controller", "Spring MVC", "Login, registration, token management")
+        Component(orderCtrl, "Order Controller", "Spring MVC", "Order CRUD and workflow")
+        Component(catalogCtrl, "Catalog Controller", "Spring MVC", "Product and category endpoints")
+
+        Component(orderService, "Order Service", "Spring Core", "Order business logic and validation")
+        Component(catalogService, "Catalog Service", "Spring Core", "Product catalog business logic")
+
+        Component(orderRepo, "Order Repository", "Spring Data JPA", "Order data access layer")
+        Component(catalogRepo, "Catalog Repository", "Spring Data JPA", "Product data access layer")
+    }
+
+    ContainerDb(orderDb, "Order Database", "PostgreSQL", "Orders, payments, shipments")
+    ContainerDb(catalogDb, "Catalog Database", "PostgreSQL", "Products, categories, inventory")
+    ContainerQueue(queue, "Message Queue", "RabbitMQ", "Async order processing")
+}
+
+System_Ext(payment, "Payment Gateway", "Processes payments")
+System_Ext(email, "Email Service", "Transactional emails")
+
+Rel(customer, spa, "Browses and purchases", "HTTPS")
+Rel(admin, adminSpa, "Manages catalog", "HTTPS")
+Rel(spa, apiComp, "API calls", "HTTPS")
+Rel(adminSpa, apiComp, "API calls", "HTTPS")
+
+Rel(apiComp, authCtrl, "Routes auth requests")
+Rel(apiComp, orderCtrl, "Routes order requests")
+Rel(apiComp, catalogCtrl, "Routes catalog requests")
+
+Rel(authCtrl, orderService, "Validates user access")
+Rel(orderCtrl, orderService, "Delegates to")
+Rel(catalogCtrl, catalogService, "Delegates to")
+
+Rel(orderService, orderRepo, "Persists orders")
+Rel(catalogService, catalogRepo, "Persists products")
+Rel(orderService, queue, "Publishes events", "AMQP")
+
+Rel(orderRepo, orderDb, "Reads/Writes", "JDBC")
+Rel(catalogRepo, catalogDb, "Reads/Writes", "JDBC")
+
+Rel(queue, email, "Sends notifications", "SMTP")
+Rel(orderService, payment, "Processes payment", "HTTPS")
+
+@enduml

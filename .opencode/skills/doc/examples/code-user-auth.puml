@@ -1,0 +1,122 @@
+@startuml Code Diagram - User Authentication
+!include <C4/C4_Component>
+LAYOUT_TOP_DOWN()
+' C4 include provides LAYOUT_TOP_DOWN() only.
+' No LAYOUT_WITH_LEGEND(): C4 legend shows irrelevant types for class diagrams.
+
+title Code Diagram - Authentication Component
+
+package "Models" {
+    entity User {
+        + id : UUID
+        + email : EmailAddress
+        + passwordHash : String
+        + roles : Set<Role>
+        + enabled : boolean
+        + locked : boolean
+        + lastLogin : Instant
+
+        + changePassword(old : String, new : String) : void
+        + assignRole(role : Role) : void
+        + isAccountNonLocked() : boolean
+    }
+
+    entity Session {
+        + token : String
+        + userId : UUID
+        + ipAddress : String
+        + userAgent : String
+        + expiresAt : Instant
+        + isValid() : boolean
+        + refresh() : void
+    }
+
+    enum Role {
+        ADMIN
+        MODERATOR
+        USER
+        GUEST
+    }
+
+    entity EmailAddress {
+        + value : String
+        + validate() : boolean
+        + domain() : String
+        + localPart() : String
+    }
+
+    User --> Role
+    User *-- EmailAddress
+}
+
+package "Services" {
+    interface AuthenticationProvider {
+        <<interface>>
+        + authenticate(credentials : Credentials) : AuthResult
+        + supports(type : AuthType) : boolean
+    }
+
+    interface UserRepository {
+        + findByEmail(email : EmailAddress) : User
+        + save(user : User) : User
+        + existsByEmail(email : EmailAddress) : boolean
+    }
+
+    class AuthenticationService {
+        <<service>>
+        - providers : List<AuthenticationProvider>
+        - userRepository : UserRepository
+        - sessionStore : SessionStore
+
+        + login(email : String, password : String) : AuthToken
+        + loginWithOAuth(provider : String, code : String) : AuthToken
+        + logout(token : String) : void
+        + validateToken(token : String) : User
+        - findProvider(type : AuthType) : AuthenticationProvider
+    }
+
+    class PasswordAuthenticator {
+        <<service>>
+        + authenticate(credentials : Credentials) : AuthResult
+        + supports(type : AuthType) : boolean
+        - hashPassword(password : String) : String
+        - verifyHash(password : String, hash : String) : boolean
+    }
+
+    class OAuthAuthenticator {
+        <<service>>
+        + authenticate(credentials : Credentials) : AuthResult
+        + supports(type : AuthType) : boolean
+        - exchangeCode(code : String) : OAuthToken
+        - fetchUserInfo(token : OAuthToken) : UserInfo
+    }
+
+    class TokenService {
+        <<service>>
+        + generate(user : User, expiresIn : Duration) : AuthToken
+        + validate(token : String) : TokenValidation
+        + revoke(token : String) : void
+        + refresh(token : String) : AuthToken
+        - sign(payload : Map) : String
+    }
+
+    enum AuthType {
+        PASSWORD
+        OAUTH_GOOGLE
+        OAUTH_GITHUB
+        OAUTH_MICROSOFT
+    }
+}
+
+AuthenticationService --> AuthenticationProvider
+AuthenticationService --> UserRepository
+AuthenticationService --> TokenService
+PasswordAuthenticator ..|> AuthenticationProvider
+OAuthAuthenticator ..|> AuthenticationProvider
+PasswordAuthenticator --> AuthType
+OAuthAuthenticator --> AuthType
+AuthenticationService --> Session
+UserRepository --> User
+TokenService --> Session
+
+@enduml

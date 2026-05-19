@@ -1,0 +1,9 @@
+Metadata-Version: 2.4
+Name: governai
+Version: 0.2.0
+Summary: Compile modular AI behaviors into executable OpenCode agent configs
+Requires-Python: >=3.11
+License-File: LICENSE
+Requires-Dist: click>=8.0
+Requires-Dist: pyyaml>=6.0
+Dynamic: license-file

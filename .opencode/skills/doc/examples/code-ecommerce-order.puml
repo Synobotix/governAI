@@ -1,0 +1,95 @@
+@startuml Code Diagram - E-Commerce Order Processing
+!include <C4/C4_Component>
+LAYOUT_TOP_DOWN()
+' C4 include provides LAYOUT_TOP_DOWN() only.
+' No LAYOUT_WITH_LEGEND(): C4 legend shows irrelevant types for class diagrams.
+
+title Code Diagram - Order Processing Component
+
+package "Domain" {
+    entity Order {
+        + id : UUID
+        + customerId : UUID
+        + status : OrderStatus
+        + items : List<OrderItem>
+        + total : Money
+        + createdAt : Instant
+
+        + submit() : void
+        + cancel(reason : String) : void
+        + addItem(product : Product, qty : int) : void
+    }
+
+    entity OrderItem {
+        + productId : UUID
+        + quantity : int
+        + unitPrice : Money
+        + total() : Money
+    }
+
+    enum OrderStatus {
+        PENDING
+        CONFIRMED
+        PROCESSING
+        SHIPPED
+        DELIVERED
+        CANCELLED
+    }
+
+    entity Money {
+        + amount : BigDecimal
+        + currency : Currency
+        + add(other : Money) : Money
+        + multiply(factor : int) : Money
+    }
+
+    Order *-- OrderItem
+    Order --> OrderStatus
+    OrderItem --> Money
+}
+
+package "Services" {
+    interface OrderRepository {
+        + findById(id : UUID) : Order
+        + save(order : Order) : Order
+        + findByCustomer(id : UUID) : List<Order>
+    }
+
+    interface PaymentProcessor {
+        <<interface>>
+        + charge(amount : Money, token : String) : PaymentResult
+        + refund(transactionId : String) : PaymentResult
+    }
+
+    class OrderService {
+        <<service>>
+        - repository : OrderRepository
+        - paymentProcessor : PaymentProcessor
+
+        + createOrder(cart : Cart) : Order
+        + cancelOrder(id : UUID, reason : String) : Order
+        + processPayment(id : UUID, token : String) : PaymentResult
+    }
+
+    class StripePaymentProcessor {
+        <<service>>
+        + charge(amount : Money, token : String) : PaymentResult
+        + refund(transactionId : String) : PaymentResult
+        - buildChargeRequest(amount : Money, token : String) : ChargeRequest
+    }
+
+    class PayPalPaymentProcessor {
+        <<service>>
+        + charge(amount : Money, token : String) : PaymentResult
+        + refund(transactionId : String) : PaymentResult
+        - buildPayPalRequest(amount : Money, token : String) : PayPalRequest
+    }
+}
+
+OrderService --> OrderRepository
+OrderService --> PaymentProcessor
+StripePaymentProcessor ..|> PaymentProcessor
+PayPalPaymentProcessor ..|> PaymentProcessor
+OrderRepository --> Order
+
+@enduml

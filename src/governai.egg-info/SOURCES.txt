@@ -1,0 +1,13 @@
+LICENSE
+README.md
+pyproject.toml
+src/governai/__init__.py
+src/governai/__main__.py
+src/governai/_version.py
+src/governai/cli.py
+src/governai.egg-info/PKG-INFO
+src/governai.egg-info/SOURCES.txt
+src/governai.egg-info/dependency_links.txt
+src/governai.egg-info/entry_points.txt
+src/governai.egg-info/requires.txt
+src/governai.egg-info/top_level.txt

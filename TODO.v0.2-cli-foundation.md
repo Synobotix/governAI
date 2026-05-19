@@ -4,12 +4,10 @@
 
 ## Active
 
-**T-003**: src/governai package skeleton + cli commands (help, list, install skeleton, create skeleton, context-aware default)
+**T-007**: create command (wizard)
 
 ## Queue
 
-- T-006: install command (compile integration)
-- T-007: create command (wizard)
 - T-008: README + docs update
 - T-009: manual validation
 
@@ -17,6 +15,7 @@
 
 - T-001: architect design + ADR writing for CLI contract | commit: b77dceb
 - T-002: pyproject.toml entry point + package skeleton + CLI skeleton | commit: b77dceb
+- T-003 through T-006: list + install + context-aware default + compile integration | commit:
 
 ## Done
 

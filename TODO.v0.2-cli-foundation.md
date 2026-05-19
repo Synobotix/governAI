@@ -4,11 +4,7 @@
 
 ## Active
 
-**T-008**: README + docs update
-
-## Queue
-
-- T-009: manual validation
+(none — all tasks complete)
 
 ## Done
 
@@ -16,3 +12,5 @@
 - T-002: pyproject.toml entry point + package skeleton + CLI skeleton | commit: b77dceb
 - T-003 through T-006: list + install + context-aware default + compile integration | commit: 857d543
 - T-007: create command (interactive wizard) | commit: f72523f
+- T-008: README + docs update | commit: d06cb17
+- T-009: manual validation | commit:

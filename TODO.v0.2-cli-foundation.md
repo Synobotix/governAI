@@ -15,8 +15,8 @@
 
 ## Done
 
-- T-001: architect design + ADR writing for CLI contract | commit:
-- T-002: pyproject.toml entry point setup | commit:
+- T-001: architect design + ADR writing for CLI contract | commit: b77dceb
+- T-002: pyproject.toml entry point + package skeleton + CLI skeleton | commit: b77dceb
 
 ## Done
 

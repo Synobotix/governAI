@@ -12,7 +12,7 @@ catalog/index.yaml
   → construire l'IR (persona + règles + contraintes + sortie)
   → aplatir en chaîne de prompt (inclut sections OUTPUT FORMAT + AVAILABLE SKILLS)
   → ajouter skills à la config agent
-  → écrire dist/opencode.json
+  → écrire .opencode/opencode.json (governAI install) ou dist/opencode.json (scripts/compile.py)
 ```
 
 Implémenté dans `scripts/compile.py`, `scripts/validate_catalog.py` et `scripts/sync_overlays_to_skills.py`.
@@ -26,12 +26,14 @@ Lecture de `catalog/index.yaml`, itération sur les configs activées.
 ### 2. Résolution des sources
 
 - Persona : chargée depuis `sources/personas/<persona>.md`
-- Overlays : chargés depuis `sources/overlays/<overlay>.md` (liste ordonnée)
+- Overlays : chargés depuis `sources/overlays/<overlay>.md`
+- Les overlays sont triés par priorité décroissante (HIGH > MEDIUM-HIGH > MEDIUM > MEDIUM-LOW > LOW)
+- En cas de règles/contraintes identiques, la version de l'overlay le plus prioritaire est conservée
 - Échec du build si un fichier source est manquant
 
 ### 3. Compilation de l'IR
 
-`build_ir()` agrège le texte de la persona + les règles/contraintes des overlays (listes) + le corps des sections Output Behavior (titres + prose) en un dictionnaire intermédiaire.
+`build_ir()` agrège le texte de la persona + les règles/contraintes des overlays (listes, par ordre de priorité) + le corps des sections Output Behavior (titres + prose) en un dictionnaire intermédiaire.
 
 ### 4. Aplatissement
 

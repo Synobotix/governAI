@@ -72,7 +72,7 @@ The compilation pipeline:
                     ┌─ scripts/validate_catalog.py (schema + source check)
                     │
 sources/personas/  ─┤
-                    ├─ catalog/index.yaml ── governAI install ── dist/opencode.json
+                    ├─ catalog/index.yaml ── governAI install ── .opencode/opencode.json
 sources/overlays/  ─┤
                     │
                     └─ scripts/sync_overlays_to_skills.py → .opencode/skills/overlays/
@@ -135,38 +135,16 @@ pip install -e .                     # install CLI in editable mode
 
 ```bash
 governAI list -p .                   # list available configs
-governAI install --all -p .          # compile all → dist/opencode.json
+governAI install --all -p .          # compile all → .opencode/opencode.json
+
+...
+
+governAI install --all -p .               # build all → .opencode/opencode.json
+governAI create -p .                      # interactive wizard (new config)
+governAI install <config-id> -p .         # build single config
 ```
 
-Or step by step with the original scripts:
-
-```bash
-pip install pyyaml
-python3 scripts/validate_catalog.py           # validate catalog
-python3 scripts/sync_overlays_to_skills.py   # sync overlays to skills
-python3 scripts/compile.py                   # → dist/opencode.json
-```
-
-See the [Getting Started guide](docs/guides/getting-started.md) for a full walkthrough.
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-## Usage
-
-### Define a persona
-
-Create `sources/personas/<name>.md` with sections: Identity, Cognitive Profile, Communication Style, Default Reasoning Behavior.
-
-### Define overlays
-
-Create `sources/overlays/<name>.md` with sections: Rules, Constraints, Output Behavior. Rules and Constraints use bullet lists (`- item`); Output Behavior captures the full section body (headings + prose).
-
-### Register in catalog
-
-Edit `catalog/index.yaml` to compose persona + overlays into a config entry.
-
-### Validate, sync, and build
+Or with the original scripts:
 
 ```bash
 governAI list -p .                        # list configs

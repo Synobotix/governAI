@@ -1,0 +1,132 @@
+@startuml Code Diagram - FHIR Resource Model
+!include <C4/C4_Component>
+LAYOUT_TOP_DOWN()
+' C4 include provides LAYOUT_TOP_DOWN() only
+' LAYOUT_WITH_LEGEND() is omitted because C4 legend
+' shows irrelevant types for class-level diagrams.
+
+title Code Diagram - FHIR Patient Resource Component
+
+package "Resources" {
+    entity Patient {
+        <<Resource>>
+        + id : UUID
+        + identifier : List<Identifier>
+        + name : List<HumanName>
+        + telecom : List<ContactPoint>
+        + gender : AdministrativeGender
+        + birthDate : LocalDate
+        + address : List<Address>
+        + maritalStatus : CodeableConcept
+        + generalPractitioner : List<Reference>
+
+        + addName(name : HumanName) : void
+        + primaryPhone() : String
+        + fullName() : String
+    }
+
+    entity HumanName {
+        <<DataType>>
+        + use : NameUse
+        + family : String
+        + given : List<String>
+        + prefix : List<String>
+        + suffix : List<String>
+        + period : Period
+    }
+
+    entity ContactPoint {
+        <<DataType>>
+        + system : ContactSystem
+        + value : String
+        + use : ContactUse
+        + period : Period
+    }
+
+    entity Address {
+        <<DataType>>
+        + use : AddressUse
+        + type : AddressType
+        + line : List<String>
+        + city : String
+        + state : String
+        + postalCode : String
+        + country : String
+        + period : Period
+    }
+
+    entity Identifier {
+        <<DataType>>
+        + use : IdentifierUse
+        + type : CodeableConcept
+        + system : String
+        + value : String
+        + period : Period
+    }
+
+    entity Reference {
+        <<DataType>>
+        + reference : String
+        + type : String
+        + display : String
+    }
+
+    entity Coding {
+        <<DataType>>
+        + system : String
+        + version : String
+        + code : String
+        + display : String
+        + userSelected : Boolean
+    }
+
+    entity CodeableConcept {
+        <<DataType>>
+        + coding : List<Coding>
+        + text : String
+    }
+
+    entity Period {
+        <<DataType>>
+        + start : LocalDate
+        + end : LocalDate
+    }
+
+    enum AdministrativeGender {
+        MALE
+        FEMALE
+        OTHER
+        UNKNOWN
+    }
+
+    enum NameUse { USUAL | OFFICIAL | TEMP | NICKNAME | OLD | MAIDEN }
+    enum ContactSystem { PHONE | FAX | EMAIL | PAGER | URL }
+    enum ContactUse { HOME | WORK | TEMP | OLD | MOBILE }
+}
+
+package "Persistence" {
+    interface PatientRepository {
+        + findById(id : UUID) : Patient
+        + searchByFamilyName(name : String) : List<Patient>
+        + save(patient : Patient) : Patient
+        + delete(id : UUID) : void
+    }
+}
+
+Patient --> AdministrativeGender
+Patient *-- HumanName
+Patient *-- ContactPoint
+Patient *-- Address
+Patient *-- Identifier
+Patient --> Reference
+Patient --> CodeableConcept
+HumanName --> NameUse
+HumanName --> Period
+ContactPoint --> ContactSystem
+ContactPoint --> ContactUse
+Address --> Period
+Identifier --> CodeableConcept
+Identifier --> Period
+CodeableConcept --> Coding
+
+@enduml

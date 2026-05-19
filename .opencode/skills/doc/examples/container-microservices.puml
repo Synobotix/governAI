@@ -1,0 +1,44 @@
+@startuml Container Diagram - Microservice Platform
+!include <C4/C4_Container>
+
+LAYOUT_TOP_DOWN()
+LAYOUT_WITH_LEGEND()
+
+title Container Diagram - Microservice Platform
+
+Person(user, "User", "Interacts with the platform")
+Person(developer, "Developer", "Manages API keys and configurations")
+
+System_Boundary(platform, "Microservice Platform") {
+    Container(spa, "Web App", "React", "Single-page application")
+    Container(gateway, "API Gateway", "Kong", "Routing, auth, rate limiting")
+    Container(authService, "Auth Service", "Go", "OAuth2 token issuance and validation")
+    Container(userService, "User Service", "Go", "User profile and preferences")
+    Container(dataService, "Data Service", "Python, FastAPI", "Data ingestion and transformation")
+    Container(notifService, "Notification Service", "Node.js", "Push and email notifications")
+    ContainerDb(authDb, "Auth Database", "Redis", "Session cache and tokens")
+    ContainerDb(userDb, "User Database", "PostgreSQL", "User profiles and preferences")
+    ContainerDb(dataDb, "Data Store", "MongoDB", "Document storage for ingested data")
+    ContainerQueue(queue, "Message Broker", "Kafka", "Async event streaming")
+}
+
+System(observability, "Observability Stack", "Prometheus, Grafana, Loki")
+System_Ext(email, "Email Provider", "SendGrid")
+
+Rel(user, spa, "Uses", "HTTPS")
+Rel(developer, gateway, "Manages API keys", "HTTPS")
+Rel(spa, gateway, "API calls", "HTTPS")
+Rel(gateway, authService, "Validates tokens", "gRPC")
+Rel(gateway, userService, "Routes user requests", "gRPC")
+Rel(gateway, dataService, "Routes data requests", "gRPC")
+Rel(authService, authDb, "Reads/Writes", "Redis protocol")
+Rel(userService, userDb, "Reads/Writes", "JDBC")
+Rel(dataService, dataDb, "Reads/Writes", "MongoDB wire")
+Rel(userService, queue, "Publishes events", "Kafka protocol")
+Rel(dataService, queue, "Publishes events", "Kafka protocol")
+Rel(notifService, queue, "Consumes events", "Kafka protocol")
+Rel(notifService, email, "Sends emails via", "HTTPS")
+Rel(gateway, observability, "Pushes metrics", "HTTP")
+Rel(authService, observability, "Pushes metrics", "HTTP")
+
+@enduml

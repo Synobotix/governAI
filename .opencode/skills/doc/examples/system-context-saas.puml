@@ -1,0 +1,28 @@
+@startuml System Context - SaaS Platform
+!include <C4/C4_Context>
+
+LAYOUT_WITH_LEGEND()
+LAYOUT_LEFT_RIGHT()
+
+title System Context - SaaS Analytics Platform
+
+Person(tenantAdmin, "Tenant Admin", "Manages workspace and users")
+Person(analyst, "Analyst", "Creates dashboards and runs queries")
+
+System(saas, "Analytics SaaS", "Multi-tenant analytics engine with dashboards and reporting")
+
+System_Ext(identity, "Auth0", "OAuth2/OpenID Connect identity provider")
+System_Ext(warehouse, "Data Warehouse", "Stores all analytical data (BigQuery)")
+System_Ext(billing, "Stripe", "Subscription billing and invoicing")
+System_Ext(monitoring, "Datadog", "Application monitoring and alerting")
+System_Ext(webhook, "Slack Webhook", "Sends report delivery notifications")
+
+Rel(tenantAdmin, saas, "Configures workspace", "HTTPS")
+Rel(analyst, saas, "Creates reports", "HTTPS")
+Rel(saas, identity, "Authenticates users via", "OIDC")
+Rel(saas, warehouse, "Reads and writes data", "JDBC")
+Rel(saas, billing, "Manages subscriptions via", "API")
+Rel(saas, monitoring, "Pushes telemetry via", "HTTPS")
+Rel(saas, webhook, "Sends report notifications", "Webhook")
+
+@enduml

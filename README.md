@@ -69,9 +69,13 @@ Ultimately, this system aims to provide an infrastructure-level approach to AI g
 The compilation pipeline:
 
 ```
-sources/personas/  ─┐
+                    ┌─ scripts/validate_catalog.py (schema + source check)
+                    │
+sources/personas/  ─┤
                     ├─ catalog/index.yaml ── scripts/compile.py ── dist/opencode.json
-sources/overlays/  ─┘
+sources/overlays/  ─┤
+                    │
+                    └─ scripts/sync_overlays_to_skills.py → .opencode/skills/overlays/
 ```
 
 **Key principles:**
@@ -94,17 +98,20 @@ The compilation pipeline is written in Python. No external dependencies beyond P
 1. **Define** a persona (`sources/personas/<name>.md`) — stable cognitive baseline
 2. **Stack** overlays (`sources/overlays/<name>.md`) — behavioral modifiers
 3. **Register** in `catalog/index.yaml` — persona + overlays + model + tools + targets
-4. **Compile** — `scripts/compile.py` merges everything into a single system prompt
-5. **Export** — `scripts/runtime.py` converts to Claude/generic JSON formats
+4. **Validate** — `scripts/validate_catalog.py` checks schema and source references
+5. **Sync** overlays to skills — `scripts/sync_overlays_to_skills.py`
+6. **Compile** — `scripts/compile.py` merges everything into a single system prompt, adds available skills
 
 ### Capabilities
 
 | | |
-|---|---|
+|---|---|---|
 | Persona + overlay compilation | Deterministic, reproducible builds |
 | Primary / subagent modes | Task delegation with permission + budget |
 | Model-agnostic | Set any model ID in catalog |
-| Prompt sections | System Persona, Rules, Constraints, Task Behavior, Output Format |
+| Prompt sections | System Persona, Rules, Constraints, Task Behavior, Output Format, Available Skills |
+| Catalog validation | Schema + source reference checks via `validate_catalog.py` |
+| Overlay-to-skill sync | Automatic sync to `.opencode/skills/overlays/` |
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -120,8 +127,9 @@ The compilation pipeline is written in Python. No external dependencies beyond P
 
 ```bash
 pip install pyyaml
-python3 scripts/compile.py            # → dist/opencode.json
-python3 scripts/runtime.py            # → dist/claude.json, dist/generic.json
+python3 scripts/validate_catalog.py           # validate catalog
+python3 scripts/sync_overlays_to_skills.py   # sync overlays to skills
+python3 scripts/compile.py                   # → dist/opencode.json
 ```
 
 See the [Getting Started guide](docs/guides/getting-started.md) for a full walkthrough.
@@ -137,17 +145,19 @@ Create `sources/personas/<name>.md` with sections: Identity, Cognitive Profile, 
 
 ### Define overlays
 
-Create `sources/overlays/<name>.md` with sections: Rules, Constraints, Output Behavior. The compiler extracts markdown list items (`- item`) from these sections.
+Create `sources/overlays/<name>.md` with sections: Rules, Constraints, Output Behavior. Rules and Constraints use bullet lists (`- item`); Output Behavior captures the full section body (headings + prose).
 
 ### Register in catalog
 
 Edit `catalog/index.yaml` to compose persona + overlays into a config entry.
 
-### Build and run
+### Validate, sync, and build
 
 ```bash
-python3 scripts/compile.py
-opencode --agent <agent-id>
+python3 scripts/validate_catalog.py          # check catalog
+python3 scripts/sync_overlays_to_skills.py   # sync overlays → skills
+python3 scripts/compile.py                   # build
+opencode --agent <agent-id>                  # run
 ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>

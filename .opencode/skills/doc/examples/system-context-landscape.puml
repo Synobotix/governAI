@@ -1,0 +1,40 @@
+@startuml System Landscape - Enterprise
+!include <C4/C4_Context>
+
+LAYOUT_TOP_DOWN()
+LAYOUT_WITH_LEGEND()
+
+title System Landscape - Enterprise Overview
+
+Enterprise_Boundary(enterprise, "Enterprise") {
+
+    Person(customer, "Customer", "End customer")
+    Person(support, "Support Agent", "Customer support staff")
+
+    System_Boundary(core, "Core Systems") {
+        System(web, "Web Shop", "Product catalog and ordering")
+        System(crm, "CRM", "Customer relationship management")
+        System(erp, "ERP", "Enterprise resource planning")
+    }
+
+    System_Boundary(bi, "Analytics") {
+        System(biSystem, "BI Platform", "Reporting and dashboards")
+    }
+}
+
+System_Ext(payment, "Payment Gateway", "Payment processing")
+System_Ext(logistics, "Logistics Partner", "Shipping and tracking")
+System_Ext(emailSys, "Email Platform", "Transactional emails")
+
+Rel(customer, web, "Places orders", "HTTPS")
+Rel(support, crm, "Manages customer data", "HTTPS")
+Rel(web, crm, "Syncs customer data", "API")
+Rel(web, erp, "Gets prices and stock", "API")
+Rel(web, payment, "Processes payments via", "HTTPS")
+Rel(erp, logistics, "Sends shipments via", "API")
+Rel(web, emailSys, "Sends confirmations via", "SMTP")
+Rel(web, biSystem, "Feeds order data to", "ETL")
+Rel(crm, biSystem, "Feeds customer data to", "ETL")
+Rel(erp, biSystem, "Feeds financial data to", "ETL")
+
+@enduml

@@ -1,0 +1,66 @@
+@startuml Component Diagram - FHIR API Container
+!include <C4/C4_Component>
+
+LAYOUT_TOP_DOWN()
+LAYOUT_WITH_LEGEND()
+
+title Component Diagram - FHIR API Container
+
+Person(patient, "Patient", "Owns and accesses health records")
+Person(practitioner, "Practitioner", "Views and updates patient records")
+
+System_Boundary(health, "Healthcare Platform") {
+    Container(webApp, "Web Application", "React", "Patient and practitioner front-end")
+
+    Container_Boundary(fhirApi, "FHIR API") {
+        Component(patientProv, "Patient Provider", "HAPI FHIR Resource Provider", "Handles Patient CRUD operations")
+        Component(obsProv, "Observation Provider", "HAPI FHIR Resource Provider", "Handles Observation CRUD")
+        Component(diagProv, "DiagnosticReport Provider", "HAPI FHIR Resource Provider", "Handles DiagnosticReport operations")
+
+        Component(fhirValidator, "FHIR Validator", "HAPI FHIR Validator", "Validates resources against FHIR profiles")
+        Component(searchSvc, "Search Service", "HAPI FHIR Search", "FHIR search parameter parsing and execution")
+        Component(authFilter, "Auth Filter", "Spring Security, OAuth2", "FHIR-compliant authorization and scoping")
+
+        Component(patientDao, "Patient DAO", "Spring Data JPA", "Patient persistence logic")
+        Component(obsDao, "Observation DAO", "Spring Data JPA", "Observation persistence logic")
+        Component(diagDao, "DiagnosticReport DAO", "Spring Data JPA", "Diagnostic report persistence logic")
+    }
+
+    ContainerDb(fhirDb, "FHIR Database", "PostgreSQL", "Stores all FHIR resources")
+}
+
+System_Ext(idp, "Identity Provider", "Keycloak", "OAuth2 / OpenID Connect provider")
+System_Ext(analytics, "Analytics Pipeline", "Stores audit and usage data")
+
+Rel(patient, webApp, "Views health records", "HTTPS")
+Rel(practitioner, webApp, "Manages patient records", "HTTPS")
+Rel(webApp, fhirApi, "REST API calls", "HTTPS")
+
+Rel(fhirApi, patientProv, "Routes Patient requests")
+Rel(fhirApi, obsProv, "Routes Observation requests")
+Rel(fhirApi, diagProv, "Routes DiagnosticReport requests")
+
+Rel(patientProv, fhirValidator, "Validates before save")
+Rel(obsProv, fhirValidator, "Validates before save")
+Rel(diagProv, fhirValidator, "Validates before save")
+
+Rel(patientProv, searchSvc, "Uses search")
+Rel(obsProv, searchSvc, "Uses search")
+Rel(diagProv, searchSvc, "Uses search")
+
+Rel(patientProv, authFilter, "Enforces access")
+Rel(obsProv, authFilter, "Enforces access")
+Rel(diagProv, authFilter, "Enforces access")
+
+Rel(patientProv, patientDao, "Persists")
+Rel(obsProv, obsDao, "Persists")
+Rel(diagProv, diagDao, "Persists")
+
+Rel(patientDao, fhirDb, "Reads/Writes", "JDBC")
+Rel(obsDao, fhirDb, "Reads/Writes", "JDBC")
+Rel(diagDao, fhirDb, "Reads/Writes", "JDBC")
+
+Rel(authFilter, idp, "Validates tokens", "HTTPS")
+Rel(fhirApi, analytics, "Logs API usage", "AMQP")
+
+@enduml

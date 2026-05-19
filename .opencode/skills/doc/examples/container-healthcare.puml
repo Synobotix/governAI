@@ -1,0 +1,44 @@
+@startuml Container Diagram - Healthcare Platform
+!include <C4/C4_Container>
+
+LAYOUT_TOP_DOWN()
+LAYOUT_WITH_LEGEND()
+
+title Container Diagram - Healthcare Platform
+
+Person(practitioner, "Medical Practitioner", "Treats patients and records clinical notes")
+Person_Ext(patient, "Patient", "Receives care and accesses records")
+
+System_Boundary(healthcare, "Healthcare Platform") {
+    Container(webApp, "Web Application", "ASP.NET Core MVC", "Patient and practitioner web interface")
+    Container(mobileApp, "Mobile App", "React Native", "Patient mobile access")
+    Container(fhirApi, "FHIR API", "ASP.NET Core", "HL7 FHIR-compliant API gateway")
+    Container(ehrService, "EHR Service", "Java, Spring Boot", "Electronic health record management")
+    Container(scheduling, "Scheduling Service", "Java, Spring Boot", "Appointment booking and calendar")
+    ContainerDb(ehrDb, "EHR Database", "PostgreSQL", "Clinical data and medical history")
+    ContainerDb(scheduleDb, "Schedule Database", "PostgreSQL", "Appointments and availability")
+    ContainerQueue(msgBus, "Message Bus", "RabbitMQ", "Async clinical event distribution")
+}
+
+System_Ext(lab, "Lab Information System", "Lab test orders and results")
+System_Ext(pharmacy, "Pharmacy System", "Prescription management")
+System_Ext(billing, "Insurance Gateway", "Claims and eligibility")
+System_Ext(idp, "National Health IDP", "Patient identity verification")
+
+Rel(practitioner, webApp, "Records clinical data", "HTTPS")
+Rel(patient, webApp, "Views records", "HTTPS")
+Rel(patient, mobileApp, "Books appointments", "HTTPS")
+Rel(webApp, fhirApi, "API calls", "HTTPS")
+Rel(mobileApp, fhirApi, "API calls", "HTTPS")
+Rel(fhirApi, ehrService, "Routes clinical requests", "AMQP")
+Rel(fhirApi, scheduling, "Routes booking requests", "AMQP")
+Rel(ehrService, ehrDb, "Reads/Writes", "JDBC")
+Rel(scheduling, scheduleDb, "Reads/Writes", "JDBC")
+Rel(ehrService, msgBus, "Publishes clinical events", "AMQP")
+Rel(scheduling, msgBus, "Publishes scheduling events", "AMQP")
+Rel(ehrService, lab, "Sends test orders", "HL7 FHIR")
+Rel(ehrService, pharmacy, "Sends prescriptions", "HL7 FHIR")
+Rel(scheduling, billing, "Checks eligibility", "HTTPS")
+Rel(fhirApi, idp, "Verifies identity via", "OpenID Connect")
+
+@enduml

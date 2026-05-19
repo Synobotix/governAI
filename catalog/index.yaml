@@ -1,0 +1,29 @@
+configs:
+    - id: system-engineer-diagnostics
+      enabled: true
+
+      source:
+        persona: system-engineer
+        overlays:
+          - diagnostics
+          - structured-analysis
+          - hypothesis-driven
+          - strict-mode
+      model: opencode/deepseek-v4-flash-free
+      mode: subagent
+      permission:
+        task:
+          "*": allow
+      task_budget: 10
+      tools:
+        write: true
+        edit: true
+        bash: true
+        task: true
+      tasks:
+        - Use the Task tool to spawn subagents for independent subtasks
+        - Spawn multiple subagents in parallel when subtasks are independent
+        - Never spawn a subagent for work you can do yourself directly
+        - Keep spawned subagent prompts self-contained and specific
+      targets:
+        - runtime: opencode

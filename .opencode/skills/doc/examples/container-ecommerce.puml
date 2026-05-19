@@ -1,0 +1,40 @@
+@startuml Container Diagram - E-Commerce Platform
+!include <C4/C4_Container>
+
+LAYOUT_TOP_DOWN()
+LAYOUT_WITH_LEGEND()
+
+title Container Diagram - E-Commerce Platform
+
+Person(customer, "Customer", "Browses and purchases products")
+Person(admin, "Admin", "Manages catalog and orders")
+
+System_Boundary(ecommerce, "E-Commerce Platform") {
+    Container(spa, "Single-Page Application", "React", "Customer-facing web UI")
+    Container(adminSpa, "Admin SPA", "React", "Admin management interface")
+    Container(api, "API Gateway", "Java, Spring Boot", "Routes requests and handles auth")
+    Container(orderService, "Order Service", "Java, Spring Boot", "Order processing and workflow")
+    Container(catalogService, "Catalog Service", "Java, Spring Boot", "Product catalog management")
+    ContainerDb(orderDb, "Order Database", "PostgreSQL", "Orders, payments, and shipments")
+    ContainerDb(catalogDb, "Catalog Database", "PostgreSQL", "Products, categories, and inventory")
+    ContainerQueue(queue, "Message Queue", "RabbitMQ", "Async order processing and notifications")
+}
+
+System_Ext(payment, "Payment Gateway", "Processes credit card payments")
+System_Ext(shipping, "Logistics API", "Shipping labels and tracking")
+System_Ext(email, "Email Service", "Transactional emails")
+
+Rel(customer, spa, "Browses and purchases", "HTTPS")
+Rel(admin, adminSpa, "Manages catalog", "HTTPS")
+Rel(spa, api, "API calls", "HTTPS")
+Rel(adminSpa, api, "API calls", "HTTPS")
+Rel(api, orderService, "Routes orders", "gRPC")
+Rel(api, catalogService, "Routes catalog requests", "gRPC")
+Rel(orderService, orderDb, "Reads/Writes", "JDBC")
+Rel(catalogService, catalogDb, "Reads/Writes", "JDBC")
+Rel(orderService, queue, "Publishes events", "AMQP")
+Rel(queue, email, "Sends notifications", "SMTP")
+Rel(orderService, payment, "Processes payment", "HTTPS")
+Rel(orderService, shipping, "Creates shipment", "API")
+
+@enduml

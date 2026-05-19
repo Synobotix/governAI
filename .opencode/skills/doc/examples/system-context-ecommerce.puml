@@ -1,0 +1,27 @@
+@startuml System Context - E-Commerce Platform
+!include <C4/C4_Context>
+
+LAYOUT_TOP_DOWN()
+LAYOUT_WITH_LEGEND()
+
+title System Context - E-Commerce Platform
+
+Person(customer, "Customer", "Browses products, places orders")
+Person(admin, "Administrator", "Manages catalog and orders")
+
+System(ecommerce, "E-Commerce Platform", "Handles product catalog, cart, checkout, and order management")
+
+System_Ext(payment, "Payment Gateway", "Processes credit card payments")
+System_Ext(shipping, "Logistics API", "Manages shipping labels and tracking")
+System_Ext(email, "Email Service", "Sends order confirmations and status updates")
+System_Ext(warehouse, "Warehouse System", "Inventory management and fulfillment backend")
+
+Rel(customer, ecommerce, "Browses and purchases", "HTTPS")
+Rel(admin, ecommerce, "Manages catalog and orders", "HTTPS")
+Rel(ecommerce, payment, "Processes payments via", "HTTPS")
+Rel(ecommerce, shipping, "Creates shipping labels via", "API")
+Rel(ecommerce, email, "Sends notifications via", "SMTP")
+Rel(ecommerce, warehouse, "Queries inventory via", "API")
+Rel(shipping, warehouse, "Sends fulfillment requests", "API")
+
+@enduml

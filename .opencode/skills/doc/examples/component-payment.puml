@@ -1,0 +1,46 @@
+@startuml Component Diagram - Payment Processing Container
+!include <C4/C4_Component>
+
+LAYOUT_TOP_DOWN()
+LAYOUT_WITH_LEGEND()
+
+title Component Diagram - Payment Processing Container
+
+System_Boundary(paymentSystem, "Payment Platform") {
+    Container_Boundary(payApi, "Payment API") {
+        Component(payCtrl, "Payment Controller", "Spring MVC", "REST endpoints for payments")
+        Component(refundCtrl, "Refund Controller", "Spring MVC", "REST endpoints for refunds")
+
+        Component(payService, "Payment Service", "Spring Core", "Payment orchestration and workflow")
+        Component(refundService, "Refund Service", "Spring Core", "Refund orchestration and validation")
+        Component(fraudDetect, "Fraud Detection", "Spring Core, Rules Engine", "Scores and flags suspicious payments")
+
+        Component(payRepo, "Payment Repository", "Spring Data JPA", "Payment and transaction data access")
+        Component(refundRepo, "Refund Repository", "Spring Data JPA", "Refund data access")
+    }
+
+    ContainerDb(payDb, "Payment Database", "PostgreSQL", "Payments, refunds, transaction log")
+    ContainerQueue(payQueue, "Payment Queue", "RabbitMQ", "Async payment events and retries")
+}
+
+System_Ext(stripe, "Stripe", "Primary payment processor")
+System_Ext(paypal, "PayPal", "Secondary payment processor")
+System_Ext(notif, "Notification Service", "Sends payment confirmations")
+
+Rel(payCtrl, payService, "Delegates payment")
+Rel(refundCtrl, refundService, "Delegates refund")
+Rel(payService, fraudDetect, "Checks fraud score")
+
+Rel(payService, payRepo, "Persists payment")
+Rel(refundService, refundRepo, "Persists refund")
+
+Rel(payRepo, payDb, "Reads/Writes", "JDBC")
+Rel(refundRepo, payDb, "Reads/Writes", "JDBC")
+
+Rel(payService, payQueue, "Publishes events", "AMQP")
+Rel(payQueue, notif, "Triggers notifications")
+
+Rel(payService, stripe, "Charges via", "HTTPS")
+Rel(payService, paypal, "Charges via", "HTTPS")
+
+@enduml

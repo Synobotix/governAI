@@ -1,0 +1,49 @@
+@startuml Container Diagram - Social Media Platform
+!include <C4/C4_Container>
+
+LAYOUT_WITH_LEGEND()
+LAYOUT_LEFT_RIGHT()
+
+title Container Diagram - Social Media Platform
+
+Person(user, "User", "Creates and consumes content")
+Person(moderator, "Moderator", "Reviews flagged content")
+
+System_Boundary(social, "Social Media Platform") {
+    Container(mobile, "Mobile App", "Swift/Kotlin", "Native mobile experience")
+    Container(web, "Web App", "Next.js", "Browser-based experience")
+    Container(feedService, "Feed Service", "Java, Spring Boot", "Content feed generation and ranking")
+    Container(postService, "Post Service", "Java, Spring Boot", "Post creation and storage")
+    Container(mediaService, "Media Service", "Python, FastAPI", "Image and video processing")
+    Container(modService, "Moderation Service", "Go", "Content flagging and review")
+    Container(notifWorker, "Notification Worker", "Node.js", "Push notification dispatch")
+    ContainerDb(postDb, "Post Database", "PostgreSQL", "Posts, comments, and likes")
+    ContainerDb(feedDb, "Feed Cache", "Redis", "Pre-computed user feeds")
+    ContainerDb(mediaDb, "Media Store", "S3-compatible", "Images and videos")
+    ContainerQueue(queue, "Event Bus", "Kafka", "Content and engagement events")
+}
+
+System_Ext(cdn, "CDN", "CloudFront")
+System_Ext(push, "Push Provider", "Firebase/APNs")
+
+Rel(user, mobile, "Uses", "HTTPS")
+Rel(user, web, "Uses", "HTTPS")
+Rel(moderator, web, "Reviews content", "HTTPS")
+Rel(mobile, postService, "Creates posts", "HTTPS")
+Rel(web, postService, "Creates posts", "HTTPS")
+Rel(mobile, feedService, "Requests feed", "HTTPS")
+Rel(web, feedService, "Requests feed", "HTTPS")
+Rel(mobile, mediaService, "Uploads media", "HTTPS")
+Rel(postService, postDb, "Reads/Writes", "JDBC")
+Rel(feedService, feedDb, "Reads/Writes", "Redis protocol")
+Rel(feedService, postDb, "Reads", "JDBC")
+Rel(mediaService, mediaDb, "Reads/Writes", "S3 API")
+Rel(postService, queue, "Publishes engagement events", "Kafka protocol")
+Rel(mediaService, queue, "Publishes media events", "Kafka protocol")
+Rel(notifWorker, queue, "Consumes events", "Kafka protocol")
+Rel(notifWorker, push, "Sends push notifications", "HTTPS")
+Rel(modService, postDb, "Reads flagged content", "JDBC")
+Rel(modService, queue, "Publishes moderation events", "Kafka protocol")
+Rel(mediaService, cdn, "Pushes media to", "HTTPS")
+
+@enduml

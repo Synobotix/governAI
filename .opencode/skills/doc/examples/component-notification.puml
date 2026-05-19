@@ -1,0 +1,57 @@
+@startuml Component Diagram - Notification Service Container
+!include <C4/C4_Component>
+
+LAYOUT_TOP_DOWN()
+LAYOUT_WITH_LEGEND()
+
+title Component Diagram - Notification Service Container
+
+System_Boundary(platform, "E-Commerce Platform") {
+    Container(orderSvc, "Order Service", "Java, Spring Boot", "Generates order events")
+    Container(userSvc, "User Service", "Java, Spring Boot", "Manages user preferences")
+
+    Container_Boundary(notifComp, "Notification Service") {
+        Component(dispatchCtrl, "Dispatch Controller", "Spring MVC", "REST and event-driven entry point")
+
+        Component(emailChannel, "Email Channel", "Spring Mail", "Sends transactional emails")
+        Component(smsChannel, "SMS Channel", "Twilio SDK", "Sends SMS notifications")
+        Component(pushChannel, "Push Channel", "Firebase SDK", "Sends mobile push notifications")
+        Component(inAppChannel, "In-App Channel", "WebSocket", "Sends real-time in-app alerts")
+
+        Component(templateEngine, "Template Engine", "Thymeleaf", "Renders notification templates")
+        Component(prefFilter, "Preference Filter", "Spring Core", "Filters by user opt-in preferences")
+        Component(deliveryTracker, "Delivery Tracker", "Spring Data JPA", "Tracks send status and retries")
+    }
+
+    ContainerDb(notifDb, "Notification Database", "PostgreSQL", "Templates, delivery log, preferences")
+    ContainerQueue(eventQueue, "Event Queue", "RabbitMQ", "Incoming notification events")
+}
+
+System_Ext(smtp, "SMTP Relay", "Forwards emails to recipients")
+System_Ext(twilio, "Twilio API", "Sends SMS messages")
+System_Ext(fcm, "Firebase Cloud Messaging", "Sends push notifications")
+
+Rel(orderSvc, eventQueue, "Publishes order events", "AMQP")
+Rel(userSvc, eventQueue, "Publishes user events", "AMQP")
+
+Rel(eventQueue, notifComp, "Delivers events", "AMQP")
+
+Rel(dispatchCtrl, prefFilter, "Checks user preferences")
+Rel(prefFilter, userSvc, "Fetches preferences", "gRPC")
+
+Rel(dispatchCtrl, templateEngine, "Renders content")
+Rel(templateEngine, notifDb, "Reads templates", "JDBC")
+
+Rel(dispatchCtrl, emailChannel, "Sends via email")
+Rel(dispatchCtrl, smsChannel, "Sends via SMS")
+Rel(dispatchCtrl, pushChannel, "Sends via push")
+Rel(dispatchCtrl, inAppChannel, "Sends in-app")
+
+Rel(dispatchCtrl, deliveryTracker, "Logs delivery")
+Rel(deliveryTracker, notifDb, "Reads/Writes", "JDBC")
+
+Rel(emailChannel, smtp, "Forwards", "SMTP")
+Rel(smsChannel, twilio, "Sends", "HTTPS")
+Rel(pushChannel, fcm, "Sends", "HTTPS")
+
+@enduml

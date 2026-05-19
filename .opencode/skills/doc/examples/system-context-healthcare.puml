@@ -1,0 +1,26 @@
+@startuml System Context - Healthcare Platform
+!include <C4/C4_Context>
+
+LAYOUT_TOP_DOWN()
+LAYOUT_WITH_LEGEND()
+
+title System Context - Healthcare Platform
+
+Person(practitioner, "Medical Practitioner", "Treats patients and records clinical notes")
+Person(patient, "Patient", "Receives care and accesses medical records")
+
+System(healthcare, "Healthcare Platform", "Electronic health records, appointment scheduling, clinical decision support")
+
+System_Ext(lab, "Lab Information System", "Manages lab tests and results")
+System_Ext(pharmacy, "Pharmacy System", "Manages prescriptions and dispensing")
+System_Ext(billing, "Insurance Gateway", "Claims processing and eligibility checks")
+System_Ext(idp, "National Health IDP", "Patient identity verification via OpenID Connect")
+
+Rel(practitioner, healthcare, "Records clinical data and views schedules", "HTTPS")
+Rel(patient, healthcare, "Views records and books appointments", "HTTPS")
+Rel(healthcare, lab, "Sends test orders and receives results", "HL7 FHIR")
+Rel(healthcare, pharmacy, "Sends prescriptions", "HL7 FHIR")
+Rel(healthcare, billing, "Submits claims and checks eligibility", "HTTPS")
+Rel(healthcare, idp, "Verifies patient identity via", "OpenID Connect")
+
+@enduml
